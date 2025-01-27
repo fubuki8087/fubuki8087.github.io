@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>Python静态分析工具Semgrep，Bandit及CodeQL的环境搭建 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="Semgrep，Bandit和CodeQL都是做Python静态分析非常实用的工具，熟练掌握这几个工具对于后续漏洞挖掘以及安全研究都大有裨益。本文主要介绍这三个工具的环境搭建基本流程。 Semgrep环境搭建Semgrep包含一系列的工具包，例如Semgrep App，Semgrep CI以及Semgrep CLI等。我们这里只介绍能本地离线运行的Semgrep CLI和VSCode插件。 Sem">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Python静态分析工具Semgrep，Bandit及CodeQL的环境搭建">
+<meta property="og:url" content="http://example.com/2025/01/26/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7Semgrep%EF%BC%8CBandit%E5%8F%8ACodeQL%E7%9A%84%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="Semgrep，Bandit和CodeQL都是做Python静态分析非常实用的工具，熟练掌握这几个工具对于后续漏洞挖掘以及安全研究都大有裨益。本文主要介绍这三个工具的环境搭建基本流程。 Semgrep环境搭建Semgrep包含一系列的工具包，例如Semgrep App，Semgrep CI以及Semgrep CLI等。我们这里只介绍能本地离线运行的Semgrep CLI和VSCode插件。 Sem">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/2025/01/26/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7Semgrep%EF%BC%8CBandit%E5%8F%8ACodeQL%E7%9A%84%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/injection_detection_try.jpg">
+<meta property="og:image" content="http://example.com/2025/01/26/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7Semgrep%EF%BC%8CBandit%E5%8F%8ACodeQL%E7%9A%84%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/semgrep_vscode_issue.jpg">
+<meta property="og:image" content="http://example.com/2025/01/26/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7Semgrep%EF%BC%8CBandit%E5%8F%8ACodeQL%E7%9A%84%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/bandit_report.jpg">
+<meta property="og:image" content="http://example.com/2025/01/26/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7Semgrep%EF%BC%8CBandit%E5%8F%8ACodeQL%E7%9A%84%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/bandit_vscode_issue.jpg">
+<meta property="og:image" content="http://example.com/2025/01/26/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7Semgrep%EF%BC%8CBandit%E5%8F%8ACodeQL%E7%9A%84%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/sarif_report.jpg">
+<meta property="og:image" content="http://example.com/2025/01/26/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7Semgrep%EF%BC%8CBandit%E5%8F%8ACodeQL%E7%9A%84%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/codeql_vscode_cli_path.jpg">
+<meta property="og:image" content="http://example.com/2025/01/26/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7Semgrep%EF%BC%8CBandit%E5%8F%8ACodeQL%E7%9A%84%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/codeql_vscode_visual_report.jpg">
+<meta property="article:published_time" content="2025-01-26T07:49:59.000Z">
+<meta property="article:modified_time" content="2025-01-27T17:03:10.417Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="Python静态分析">
+<meta property="article:tag" content="Semgrep">
+<meta property="article:tag" content="Bandit">
+<meta property="article:tag" content="CodeQL">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/2025/01/26/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7Semgrep%EF%BC%8CBandit%E5%8F%8ACodeQL%E7%9A%84%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/injection_detection_try.jpg">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"><span class="fa fa-bars"></span></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+        
+          <a class="nav-icon" href="/atom.xml" title="RSS Feed"><span class="fa fa-rss"></span></a>
+        
+        <a class="nav-icon nav-search-btn" title="Search"><span class="fa fa-search"></span></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://example.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-Python静态分析工具Semgrep，Bandit及CodeQL的环境搭建" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2025/01/26/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7Semgrep%EF%BC%8CBandit%E5%8F%8ACodeQL%E7%9A%84%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/" class="article-date">
+  <time class="dt-published" datetime="2025-01-26T07:49:59.000Z" itemprop="datePublished">2025-01-26</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      Python静态分析工具Semgrep，Bandit及CodeQL的环境搭建
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <p>Semgrep，Bandit和CodeQL都是做Python静态分析非常实用的工具，熟练掌握这几个工具对于后续漏洞挖掘以及安全研究都大有裨益。本文主要介绍这三个工具的环境搭建基本流程。</p>
+<h2 id="Semgrep环境搭建"><a href="#Semgrep环境搭建" class="headerlink" title="Semgrep环境搭建"></a>Semgrep环境搭建</h2><p>Semgrep包含一系列的工具包，例如<code>Semgrep App</code>，<code>Semgrep CI</code>以及<code>Semgrep CLI</code>等。我们这里只介绍能本地离线运行的<code>Semgrep CLI</code>和VSCode插件。</p>
+<h3 id="Semgrep-CLI的安装"><a href="#Semgrep-CLI的安装" class="headerlink" title="Semgrep CLI的安装"></a>Semgrep CLI的安装</h3><p>前置条件：</p>
+<ul>
+<li>Python 3.9以上</li>
+<li>Python Virtualenv （可选，这篇文章选择它作为Python的默认虚拟环境）</li>
+</ul>
+<h4 id="1-创建Semgrep虚拟环境目录"><a href="#1-创建Semgrep虚拟环境目录" class="headerlink" title="1. 创建Semgrep虚拟环境目录"></a>1. 创建Semgrep虚拟环境目录</h4><p>在任意一个空文件下执行</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python3 -m venv .</span><br></pre></td></tr></table></figure>
+<p>激活虚拟环境</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">source</span> bin/activate</span><br></pre></td></tr></table></figure>
+<p>此后每次重启命令行，在执行Semgrep工具前都需要激活虚拟环境</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">source</span> &lt;Semgrep虚拟环境目录&gt;/bin/activate</span><br></pre></td></tr></table></figure>
+
+<h4 id="2-安装Semgrep-CLI"><a href="#2-安装Semgrep-CLI" class="headerlink" title="2. 安装Semgrep CLI"></a>2. 安装Semgrep CLI</h4><p>Semgrep CLI的安装非常简单，直接用<code>pip</code>安装就可以了</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip install semgrep</span><br></pre></td></tr></table></figure>
+<p>可以通过</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">semgrep --<span class="built_in">help</span></span><br></pre></td></tr></table></figure>
+<p>确认安装是否成功</p>
+<h4 id="3-尝试简单案例"><a href="#3-尝试简单案例" class="headerlink" title="3. 尝试简单案例"></a>3. 尝试简单案例</h4><p>我们准备一个待分析文件<code>injection.py</code>，它包含一些可以命令注入的sink点，其内容如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> json</span><br><span class="line"><span class="keyword">import</span> subprocess</span><br><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"><span class="keyword">import</span> django</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">a</span>(<span class="params">request</span>):</span><br><span class="line">    ip = request.POST.get(<span class="string">&quot;ip&quot;</span>)</span><br><span class="line">    <span class="comment"># ruleid:subprocess-injection</span></span><br><span class="line">    subprocess.run(<span class="string">&quot;ping &quot;</span>+ ip)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">b</span>(<span class="params">request</span>):</span><br><span class="line">    host = request.headers[<span class="string">&quot;HOST&quot;</span>]</span><br><span class="line">    <span class="comment"># ruleid:subprocess-injection</span></span><br><span class="line">    subprocess.run(<span class="string">&quot;echo &#123;&#125; &gt; log&quot;</span>.<span class="built_in">format</span>(host))</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">d</span>(<span class="params">request</span>):</span><br><span class="line">    cmd = request.POST.get(<span class="string">&quot;cmd&quot;</span>)</span><br><span class="line">    ip = request.POST.get(<span class="string">&quot;ip&quot;</span>)</span><br><span class="line">    command = [cmd, ip]</span><br><span class="line">    <span class="comment"># ruleid:subprocess-injection</span></span><br><span class="line">    subprocess.capture_output(command)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">e</span>(<span class="params">request</span>):</span><br><span class="line">    event = json.loads(request.body)</span><br><span class="line">    cmd = event[<span class="string">&#x27;id&#x27;</span>].split()</span><br><span class="line">    <span class="comment"># ruleid:subprocess-injection</span></span><br><span class="line">    subprocess.call([cmd[<span class="number">0</span>], cmd[<span class="number">1</span>], <span class="string">&quot;some&quot;</span>, <span class="string">&quot;args&quot;</span>])</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">f</span>(<span class="params">request</span>):</span><br><span class="line">    event = json.loads(request.body)</span><br><span class="line">    <span class="comment"># ruleid:subprocess-injection</span></span><br><span class="line">    subprocess.run([<span class="string">&quot;bash&quot;</span>, <span class="string">&quot;-c&quot;</span>, event[<span class="string">&#x27;id&#x27;</span>]], shell=<span class="literal">True</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">g</span>(<span class="params">request</span>):</span><br><span class="line">    event = request.body</span><br><span class="line">    python_file = <span class="string">f&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">        print(&quot;What is your name?&quot;)</span></span><br><span class="line"><span class="string">        name = input()</span></span><br><span class="line"><span class="string">        print(&quot;Hello &quot; + <span class="subst">&#123;event[<span class="string">&#x27;id&#x27;</span>]&#125;</span>)</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    <span class="comment"># ruleid:subprocess-injection</span></span><br><span class="line">    program = subprocess.Popen([<span class="string">&#x27;python2&#x27;</span>, python_file], stdin=subprocess.PIPE, text=<span class="literal">True</span>)</span><br><span class="line">    program.communicate(<span class="built_in">input</span>=payload, timeout=<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">d_ok</span>(<span class="params">request</span>):</span><br><span class="line">    <span class="comment"># ok:subprocess-injection</span></span><br><span class="line">    cmd = request.POST.get(<span class="string">&quot;cmd&quot;</span>)</span><br><span class="line">    ip = request.POST.get(<span class="string">&quot;ip&quot;</span>)</span><br><span class="line">    subprocess.capture_output([<span class="string">&quot;ping&quot;</span>, cmd, ip])</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">d_ok2</span>(<span class="params">request</span>):</span><br><span class="line">    ip = request.POST.get(<span class="string">&quot;ip&quot;</span>)</span><br><span class="line">    cmd = [<span class="string">&quot;ping&quot;</span>, ip]</span><br><span class="line">    <span class="comment"># ok:subprocess-injection</span></span><br><span class="line">    subprocess.capture_output(cmd)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">e_ok</span>(<span class="params">request</span>):</span><br><span class="line">    allowed = &#123;<span class="string">&#x27;p&#x27;</span>: <span class="string">&quot;ping&quot;</span>&#125;</span><br><span class="line"></span><br><span class="line">    event = json.loads(request.body)</span><br><span class="line">    cmd = event[<span class="string">&#x27;id&#x27;</span>].split()</span><br><span class="line"></span><br><span class="line">    valid = allowed[cmd[<span class="number">0</span>]]</span><br><span class="line">    <span class="comment"># ok:subprocess-injection</span></span><br><span class="line">    subprocess.call([valid, <span class="string">&quot;some&quot;</span>, <span class="string">&quot;args&quot;</span>])</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">ok</span>(<span class="params">request</span>):</span><br><span class="line">    ip = request.POST.get(<span class="string">&quot;ip&quot;</span>)</span><br><span class="line">    <span class="comment"># ok:subprocess-injection</span></span><br><span class="line">    subprocess.run([<span class="string">&quot;ping&quot;</span>, ip])</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">ok2</span>(<span class="params">request</span>):</span><br><span class="line">    ip = request.POST.get(<span class="string">&quot;ip&quot;</span>)</span><br><span class="line">    <span class="comment"># ok:subprocess-injection</span></span><br><span class="line">    subprocess.run(<span class="string">&quot;echo &#x27;nothing&#x27;&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">ok3</span>(<span class="params">request</span>):</span><br><span class="line">    ip = request.POST.get(<span class="string">&quot;ip&quot;</span>)</span><br><span class="line">    <span class="comment"># ok:subprocess-injection</span></span><br><span class="line">    subprocess.call([<span class="string">&quot;echo&quot;</span>, <span class="string">&quot;a&quot;</span>, <span class="string">&quot;;&quot;</span>, <span class="string">&quot;rm&quot;</span>, <span class="string">&quot;-rf&quot;</span>, <span class="string">&quot;/&quot;</span>])</span><br></pre></td></tr></table></figure>
+<p>下面我们使用Semgrep官方规则库中的规则<code>r/python.django.security.injection.command.subprocess-injection.subprocess-injection</code>来检测源代码中与<code>subprocess</code>有关的命令注入问题，输入命令：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">semgrep --config <span class="string">&quot;r/python.django.security.injection.command.subprocess-injection.subprocess-injection&quot;</span> injection.py</span><br></pre></td></tr></table></figure>
+<p>我们可以看到生成了一份分析报告：</p>
+<p><img src="/2025/01/26/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7Semgrep%EF%BC%8CBandit%E5%8F%8ACodeQL%E7%9A%84%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/injection_detection_try.jpg" alt="Semgrep尝试"><br>从报告中可以看出，Semgrep在第9，14，21，27，32和42行发现了注入点，这个地方可能导致命令注入问题。</p>
+<h3 id="Semgrep-VSCode插件的安装与使用"><a href="#Semgrep-VSCode插件的安装与使用" class="headerlink" title="Semgrep VSCode插件的安装与使用"></a>Semgrep VSCode插件的安装与使用</h3><p>Semgrep提供了VSCode插件用作源代码检查，该插件可以独立于Semgrep CLI运行（因为内置了）。</p>
+<p>安装过程很简单，只需要在应用商店中搜索<code>Semgrep</code>就行了。</p>
+<p>安装完后，当VSCode的焦点在某个源代码文件时，它会自动根据线上实时同步的<a target="_blank" rel="noopener" href="https://semgrep.dev/c/p/default">官方规则库</a>规则对源代码进行扫描，将检测到的问题标记出来。如下图所示：</p>
+<p><img src="/2025/01/26/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7Semgrep%EF%BC%8CBandit%E5%8F%8ACodeQL%E7%9A%84%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/semgrep_vscode_issue.jpg" alt="Semgrep VSCode对源代码自动扫描"><br>可以看到，在源代码中会用红色波浪线标记出有问题的位置，把鼠标移到红色波浪线附近，能看到问题的说明，还可以选择快速修复。在下方<code>问题</code>窗口中也列出了所有发现的问题。</p>
+<h2 id="Bandit环境搭建"><a href="#Bandit环境搭建" class="headerlink" title="Bandit环境搭建"></a>Bandit环境搭建</h2><h3 id="Bandit-CLI的安装"><a href="#Bandit-CLI的安装" class="headerlink" title="Bandit CLI的安装"></a>Bandit CLI的安装</h3><p>前置条件：</p>
+<ul>
+<li>Python 3.9以上</li>
+<li>Python Virtualenv （可选，这篇文章选择它作为Python的默认虚拟环境）</li>
+</ul>
+<h4 id="1-创建Bandit虚拟环境目录"><a href="#1-创建Bandit虚拟环境目录" class="headerlink" title="1. 创建Bandit虚拟环境目录"></a>1. 创建Bandit虚拟环境目录</h4><p>这里与Semgrep的操作几乎一样，因此不再赘述。</p>
+<h4 id="2-安装Bandit-CLI"><a href="#2-安装Bandit-CLI" class="headerlink" title="2. 安装Bandit CLI"></a>2. 安装Bandit CLI</h4><p>执行命令</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip install bandit</span><br></pre></td></tr></table></figure>
+<p>即可</p>
+<h4 id="3-尝试简单案例-1"><a href="#3-尝试简单案例-1" class="headerlink" title="3. 尝试简单案例"></a>3. 尝试简单案例</h4><p>执行命令</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bandit injection.py</span><br></pre></td></tr></table></figure>
+<p>Bandit会用内置规则（Bandit中也称插件）对源代码进行扫描，生成漏洞报告</p>
+<p><img src="/2025/01/26/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7Semgrep%EF%BC%8CBandit%E5%8F%8ACodeQL%E7%9A%84%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/bandit_report.jpg" alt="Bandit漏洞报告"><br>若是想生成JSON格式可以这样输入命令：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bandit -f json injection.py &gt; report.json</span><br></pre></td></tr></table></figure>
+
+<p>相对Semgrep来说，Bandit的功能简单一些，规则的丰富度也低一些。</p>
+<h3 id="Bandit-VSCode插件的安装与使用"><a href="#Bandit-VSCode插件的安装与使用" class="headerlink" title="Bandit VSCode插件的安装与使用"></a>Bandit VSCode插件的安装与使用</h3><p>Bandit VSCode插件的安装与使用过程与Semgrep的差不多，唯一不同的就是在应用商店中搜索<code>bandit</code>。</p>
+<p>这是源代码扫描的结果：</p>
+<p><img src="/2025/01/26/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7Semgrep%EF%BC%8CBandit%E5%8F%8ACodeQL%E7%9A%84%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/bandit_vscode_issue.jpg" alt="Bandit VSCode对源代码自动扫描"></p>
+<h2 id="CodeQL"><a href="#CodeQL" class="headerlink" title="CodeQL"></a>CodeQL</h2><h3 id="CodeQL-CLI和CodeQL-SDK的安装"><a href="#CodeQL-CLI和CodeQL-SDK的安装" class="headerlink" title="CodeQL CLI和CodeQL SDK的安装"></a>CodeQL CLI和CodeQL SDK的安装</h3><p>CodeQL是一个基于查询的静态分析引擎，它需要我们先从源码仓库中创建一个数据库，然后编写数据库查询脚本（类似于SQL），在查询脚本中定义我们的静态分析规则，接着执行静态分析引擎，生成静态分析报告。CodeQL的正常工作需要两个部分：<code>CodeQL CLI</code>和<code>CodeQL SDK</code>。<code>CodeQL CLI</code>是静态分析引擎部分，这部分是闭源的，CodeQL官方只提供了编译好的二进制可执行程序。<code>CodeQL SDK</code>包含了我们编写查询脚本所必要的API，也包含了一些官方预置的规则以及sink点和source点的定义，而这部分是开源的。</p>
+<p>我们可以分别独立下载<a target="_blank" rel="noopener" href="https://github.com/github/codeql-cli-binaries/releases">CodeQL CLI</a>和<a target="_blank" rel="noopener" href="https://github.com/github/codeql">CodeQL SDK</a>，但是我们需要确保<code>CodeQL CLI</code>和<code>CodeQL SDK</code>的版本一致性，而<code>CodeQL CLI</code>对应的<code>CodeQL SDK</code>版本会在<code>CodeQL CLI</code>的下载页面明确说明。不管怎么说，分别独立下载<code>CodeQL CLI</code>和<code>CodeQL SDK</code>的方法都比较麻烦，因此强烈建议直接下载官方提供的<code>CodeQL Bundle</code>，它将<code>CodeQL CLI</code>和<code>CodeQL SDK</code>打包在了一起，并且版本已经兼容适配过了，同时文件目录的组织也经过了整理。下面的教程将以<code>CodeQL Bundle</code>为基础。</p>
+<h4 id="1-CodeQL-Bundle的下载安装"><a href="#1-CodeQL-Bundle的下载安装" class="headerlink" title="1. CodeQL Bundle的下载安装"></a>1. CodeQL Bundle的下载安装</h4><p>前往下载页面（<a target="_blank" rel="noopener" href="https://github.com/github/codeql-action/releases">https://github.com/github/codeql-action/releases</a>），找到<code>CodeQL Bundle</code>最新版的下载区域，在<code>Assets</code>中根据你的操作系统下载相对应的文件，至于是下载<code>tar.gz</code>还是<code>tar.zst</code>版本取决于你是否安装了<code>zstd</code>压缩工具，如果你没有这个印象，建议还是下载传统的<code>tar.gz</code>版。由于我这里是Linux系统，故而我下载的是<code>codeql-bundle-linux64.tar.gz</code>，下载完后找到一个合适的位置解压</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tar xzvf codeql-bundle-linux64.tar.gz</span><br></pre></td></tr></table></figure>
+<p>进入CodeQL根目录</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> codeql</span><br></pre></td></tr></table></figure>
+<p>观察是否能够正常运行</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./codeql --<span class="built_in">help</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="2-环境变量的设置"><a href="#2-环境变量的设置" class="headerlink" title="2. 环境变量的设置"></a>2. 环境变量的设置</h4><p>如果我们在任意目录下直接执行<code>codeql</code>会提示命令不存在</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ codeql --<span class="built_in">help</span></span><br><span class="line">codeql: <span class="built_in">command</span> not found</span><br></pre></td></tr></table></figure>
+<p>我们需要设置环境变量让Shell窗口能够识别这个命令，编辑<code>~/.bashrc</code>文件（注：这里假设你用的是最常见的bash，如果是其他的Shell，请参考对应的教程操作）</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vi ~/.bashrc</span><br></pre></td></tr></table></figure>
+<p>在最后一行添加</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">export PATH=$PATH:&lt;解压前所在的路径&gt;/codeql/</span><br></pre></td></tr></table></figure>
+<p>把<code>&lt;解压前所在的路径&gt;</code>改成文中对应的路径即可。</p>
+<p>另外，如果你是在<code>HOME</code>目录解压的，在每次执行CodeQL CLI时会有性能提示，可以通过在<code>~/.bashrc</code>最后再加一行</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">export CODEQL_ALLOW_INSTALLATION_ANYWHERE=true</span><br></pre></td></tr></table></figure>
+<p>这样每次就不会出现提示了。</p>
+<h4 id="3-尝试简单案例-2"><a href="#3-尝试简单案例-2" class="headerlink" title="3. 尝试简单案例"></a>3. 尝试简单案例</h4><p>我们新建一个文件夹<code>toy_case</code>，并在<code>toy_case</code>文件夹里准备一个待分析文件<code>toy_injection.py</code></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> subprocess</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> Flask, request</span><br><span class="line">app = Flask(__name__)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">write</span>(<span class="params">info</span>):</span><br><span class="line">    <span class="built_in">print</span>(info)</span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&quot;/execute&quot;</span></span>)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">command_injection1</span>():</span><br><span class="line">    real_cmd = request.args.get(<span class="string">&#x27;cmd&#x27;</span>, <span class="string">&#x27;&#x27;</span>)</span><br><span class="line">    command = <span class="string">&quot;timeout 5 &quot;</span> + real_cmd</span><br><span class="line"></span><br><span class="line">    <span class="comment"># ok</span></span><br><span class="line">    write(command)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># pwn!</span></span><br><span class="line">    subprocess.run(command)</span><br></pre></td></tr></table></figure>
+
+<p>首先我们需要生成数据库，数据库生成命令的格式为</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">codeql database create &lt;数据库名&gt; --language=python --source-root=&lt;源码路径&gt;</span><br></pre></td></tr></table></figure>
+<p>具体到我们的例子中，可以是</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">codeql database create toy --language=python --source-root=&lt;刚刚我们创建的toy_case文件夹路径&gt;</span><br></pre></td></tr></table></figure>
+<p>成功执行后应该会在当前目录中生成一个名为<code>toy</code>的文件夹，这里面存放着刚刚生成的数据库。</p>
+<p>得到数据库后，我们可以对数据库进行查询，执行我们想要的静态分析任务</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">codeql database analyze &lt;项目生成的数据库名路径&gt; &lt;规则库路径&gt; --format=&lt;生成报告的格式&gt; -o &lt;生成报告的文件名&gt;</span><br></pre></td></tr></table></figure>
+<p>我们使用CodeQL SDK中官方预置的检测命令注入的查询脚本来检测<code>toy_injection.py</code>中的命令注入issue</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">codeql database analyze toy/ codeql/python-queries:Security/CWE-078/CommandInjection.ql --format=sarif-latest -o result.json</span><br></pre></td></tr></table></figure>
+<p>SARIF (Static Analysis Results Interchange Format) 是一种基于JSON的标准化静态分析结果交换格式，旨在统一不同静态分析工具的输出格式，方便结果的可视化、集成和自动化处理。它是专门为静态分析设计的，里面包含的信息也最丰富，VSCode有一个插件<code>SARIF Viewer</code>能让分析结果可视化。当然，我们也可以生成csv格式，但信息量不如SARIF格式全。这是我们生成的SARIF分析报告的一部分截图，可以看到它包含了每个数据流路径节点对应的源代码行号、起始列、终止列等</p>
+<p><img src="/2025/01/26/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7Semgrep%EF%BC%8CBandit%E5%8F%8ACodeQL%E7%9A%84%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/sarif_report.jpg" alt="SARIF分析报告"></p>
+<h3 id="CodeQL-VSCode插件安装"><a href="#CodeQL-VSCode插件安装" class="headerlink" title="CodeQL VSCode插件安装"></a>CodeQL VSCode插件安装</h3><p>与<code>Semgrep</code>和<code>Bandit</code>一样，<code>CodeQL</code>也在VSCode上有集成。直接在应用商店搜索<code>CodeQL</code>安装即可。</p>
+<p>安装完后我们必须要到“文件”-“首选项”-“设置”的<code>CodeQL &gt; Cli &gt; Executable Path</code>这一项，以绝对路径的形式输入我们刚刚安装的<code>CodeQL CLI</code>的路径，例如我这里是这么配置的</p>
+<p><img src="/2025/01/26/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7Semgrep%EF%BC%8CBandit%E5%8F%8ACodeQL%E7%9A%84%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/codeql_vscode_cli_path.jpg" alt="CodeQL VSCode插件配置CLI的路径"><br>然后在左侧选中<code>QL</code>图标，在<code>DATABASES</code>这一栏选择<code>From a folder</code>，把之前我们生成的<code>toy</code>数据库文件夹导入进来。然后在VSCode中打开<code>CommandInjection.ql</code>文件（我这里的路径在<code>&lt;codeql根目录&gt;/qlpacks/codeql/python-queries/1.4.1/Security/CWE-078/CommandInjection.ql</code>，可能会有版本的细微差别），在文本编辑窗口右键，再点击<code>CodeQL: Run Query on Selected Database</code>，即可开始查询。</p>
+<p>查询完成后能得到可视化的分析报告</p>
+<p><img src="/2025/01/26/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7Semgrep%EF%BC%8CBandit%E5%8F%8ACodeQL%E7%9A%84%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/codeql_vscode_visual_report.jpg" alt="CodeQL VSCode可视化分析报告"><br>可以看到CodeQL成功发现了注入的路径，同时排除了<code>write</code>函数正常的路径，实现了命令注入漏洞检测的预期目的。</p>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>本文详细介绍了<code>Semgrep</code>，<code>Bandit</code>以及<code>CodeQL</code>这三款常用的Python静态分析工具的环境搭建步骤，并且各自都给了一个上手案例。在后面的文章中，我们会更加深入地学习这三款静态分析工具的使用方法。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2025/01/26/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7Semgrep%EF%BC%8CBandit%E5%8F%8ACodeQL%E7%9A%84%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/" data-id="cm6dd0pf70000lwd29djpbsmi" data-title="Python静态分析工具Semgrep，Bandit及CodeQL的环境搭建" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Bandit/" rel="tag">Bandit</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/CodeQL/" rel="tag">CodeQL</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90/" rel="tag">Python静态分析</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Semgrep/" rel="tag">Semgrep</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Bandit/" rel="tag">Bandit</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CodeQL/" rel="tag">CodeQL</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90/" rel="tag">Python静态分析</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Semgrep/" rel="tag">Semgrep</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Bandit/" style="font-size: 10px;">Bandit</a> <a href="/tags/CodeQL/" style="font-size: 10px;">CodeQL</a> <a href="/tags/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90/" style="font-size: 10px;">Python静态分析</a> <a href="/tags/Semgrep/" style="font-size: 10px;">Semgrep</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/01/">January 2025</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2025/01/26/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7Semgrep%EF%BC%8CBandit%E5%8F%8ACodeQL%E7%9A%84%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/">Python静态分析工具Semgrep，Bandit及CodeQL的环境搭建</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2025 John Doe<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.6.4.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>
