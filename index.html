@@ -69,6 +69,137 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-Semgrep（一）：初识Semgrep" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2025/01/30/Semgrep%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9A%E5%88%9D%E8%AF%86Semgrep/" class="article-date">
+  <time class="dt-published" datetime="2025-01-30T10:30:15.000Z" itemprop="datePublished">2025-01-30</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2025/01/30/Semgrep%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9A%E5%88%9D%E8%AF%86Semgrep/">Semgrep（一）：初识Semgrep</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <p>Semgrep是一个主打轻量、快速的静态代码分析工具。它遵循“安全左移”的基本理念，支持将静态分析融入到软件开发生命周期当中。Semgrep的灵感来源于我们大家都熟悉的Linux命令<code>grep</code>，它希望静态分析能像<code>grep</code>一样，通过一些模式规则就能提取到很多重要的程序分析结果，而Semgrep的命名也是<code>Semantic（语义）</code>和<code>grep</code>的结合，顾名思义就是想在轻量快速的基础上，打造一个更智能、能支持更多语义信息提取的<code>grep</code>，用来帮助开发者在开发过程中检测大部分常见的代码问题。这篇文章主要是让我们对Semgrep有个总体性了解，包括Semgrep的产品生态、规则系统以及常用的命令，我将用三个章节展开。</p>
+<h2 id="Semgrep生态全景"><a href="#Semgrep生态全景" class="headerlink" title="Semgrep生态全景"></a>Semgrep生态全景</h2><p>Semgrep是由一系列产品、平台、数据库组成的，其中部分是开源免费，也有部分是商用。主要包括以下内容：</p>
+<h3 id="1-Semgrep-Registry"><a href="#1-Semgrep-Registry" class="headerlink" title="1. Semgrep Registry"></a>1. Semgrep Registry</h3><p><code>Semgrep Registry</code>是由Semgrep官方维护，社区广泛参与的静态分析规则数据库，它的网站在<a target="_blank" rel="noopener" href="https://semgrep.dev/explore">这里</a>。<code>Semgrep Registry</code>包括开源部分和商用部分，开源部分托管在了Github仓库<a target="_blank" rel="noopener" href="https://github.com/semgrep/semgrep-rules">semgrep-rules</a>中，由社区共建共享，我们可以直接免费使用；而商用部分是由Semgrep官方编写的更加精准的分析规则，也称<code>Pro Rules</code>，据称能大大降低假阳性。</p>
+<h3 id="2-Semgrep-Community-Edition-Semgrep-CE"><a href="#2-Semgrep-Community-Edition-Semgrep-CE" class="headerlink" title="2. Semgrep Community Edition (Semgrep CE)"></a>2. Semgrep Community Edition (Semgrep CE)</h3><p><code>Semgrep CE</code>包含有大部分基础的代码静态扫描能力，这部分完全开源。开源的分析引擎由OCaml语言编写，可以在<a target="_blank" rel="noopener" href="https://github.com/semgrep/semgrep">这里</a>找到。另外，<code>Semgrep CE</code>可以连接到<code>Semgrep Registry</code>中开源部分的规则，同时我们也可以根据自己的需要，编写自己的规则。<code>Semgrep CE</code>还支持过程内的数据流分析，当然从整体来看，目前Semgrep对数据流分析的支持还比较初级，不如CodeQL这样的重量级分析工具。<code>Semgrep CE</code>会是我们以后学习、使用乃至改进的主要版本。</p>
+<h3 id="3-Semgrep-AppSec-Platform"><a href="#3-Semgrep-AppSec-Platform" class="headerlink" title="3. Semgrep AppSec Platform"></a>3. Semgrep AppSec Platform</h3><p><code>Semgrep AppSec Platform</code>是主要面向公司盈利的商业化平台，用于向企业以及专业的开发团队提供服务。它主要包括三个产品：</p>
+<p><img src="/2025/01/26/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7Semgrep%EF%BC%8CBandit%E5%8F%8ACodeQL%E7%9A%84%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/tform.jpg" alt="Semgrep AppSec Platform"></p>
+<ul>
+<li><strong>Semgrep Code</strong>: <code>Semgrep Code</code>可以认为是<code>Semgrep CE</code>的高级版本，与<code>Semgrep CE</code>的主要功能区别有二：（1）支持跨过程数据流分析和跨文件数据流分析；（2）支持连接<code>Semgrep Registry</code>中<code>Pro Rules</code>部分。当我们使用<code>Semgrep Code</code>时必须登录Semgrep账号进行验证，才能使用这些高级功能。我们有时可能会需要用<code>Semgrep Code</code>来做一些跨过程甚至跨文件的数据流分析；</li>
+<li><strong>Semgrep Supply Chain</strong>: <code>Semgrep Supply Chain</code>是一种软件依赖包扫描器，它可以检测开源第三方库和API中出现的漏洞，提醒开发者及时更新；</li>
+<li><strong>Semgrep Secrets</strong>: <code>Semgrep Secrets</code>是一种secret扫描器，主要用于识别硬编码进源代码的密钥、凭据、口令等本应需要严格保护的秘密信息。</li>
+</ul>
+<p><code>Semgrep Code</code>和<code>Semgrep Supply Chain</code>对开发者在10人以内的项目可免费使用。10人以内的标准是：用<code>git log</code>查看最近一个月的commit记录，里面不同的作者数在10人以内。</p>
+<h2 id="Semgrep规则系统"><a href="#Semgrep规则系统" class="headerlink" title="Semgrep规则系统"></a>Semgrep规则系统</h2><h3 id="Semgrep规则格式"><a href="#Semgrep规则格式" class="headerlink" title="Semgrep规则格式"></a>Semgrep规则格式</h3><p>Semgrep规则是一个YAML配置文件，下图是检测Python中<code>subprocess</code>导致命令注入的规则文件<code>subprocess-injection.yaml</code>的内容展示：</p>
+<p><img src="/2025/01/26/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7Semgrep%EF%BC%8CBandit%E5%8F%8ACodeQL%E7%9A%84%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/t.jpg" alt="Semgrep规则文件"></p>
+<p>以下是在一条规则中必须要有的规则项：</p>
+<style>
+  table td, table th {
+    padding: 8px !important;
+  }
+</style>
+
+<table>
+<thead>
+<tr>
+<th>规则项</th>
+<th>类型</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>id</code></td>
+<td><code>string</code></td>
+<td>用于标识该规则的唯一标识符</td>
+</tr>
+<tr>
+<td><code>message</code></td>
+<td><code>string</code></td>
+<td>当规则成功匹配后，在匹配到的源代码位置处显示的消息。一般应该包括为什么Semgrep要匹配该规则，以及应该如何缓解或修复该问题</td>
+</tr>
+<tr>
+<td><code>severity</code></td>
+<td><code>string</code></td>
+<td>仅为<code>INFO</code>（低风险），<code>WARNING</code>（中风险），<code>ERROR</code>（高风险）三者之一</td>
+</tr>
+<tr>
+<td><code>languages</code></td>
+<td><code>array</code></td>
+<td>表明规则所适用的程序语言范围</td>
+</tr>
+<tr>
+<td><code>pattern</code></td>
+<td><code>string</code></td>
+<td>匹配的规则模式</td>
+</tr>
+<tr>
+<td><code>patterns</code></td>
+<td><code>array</code></td>
+<td>用逻辑“与”匹配多个规则模式</td>
+</tr>
+<tr>
+<td><code>pattern-either</code></td>
+<td><code>array</code></td>
+<td>用逻辑“或”匹配多个规则模式</td>
+</tr>
+<tr>
+<td><code>pattern-regex</code></td>
+<td><code>string</code></td>
+<td>在多行模式下匹配的PCRE2兼容的正则表达式</td>
+</tr>
+</tbody></table>
+<p>其中，<code>pattern</code>，<code>patterns</code>，<code>pattern-either</code>，<code>pattern-regex</code>只需要一项存在即可。</p>
+<p>除了这些以外，还有很多可选规则项，这些将在后续章节有需要的情况下再介绍。另外，关于规则模式的语法，将在下一篇文章中详细介绍。</p>
+<h3 id="如何引用Semgrep-Registry中的规则-规则包"><a href="#如何引用Semgrep-Registry中的规则-规则包" class="headerlink" title="如何引用Semgrep Registry中的规则&#x2F;规则包"></a>如何引用Semgrep Registry中的规则&#x2F;规则包</h3><p>规则有两种被引用的方式：（1）规则文件路径；（2）规则包（package）。</p>
+<p>如果以<code>规则文件路径</code>的方式引用规则，格式为<code>r/</code>前缀加上规则文件路径（把斜线改成小数点，去掉<code>.yaml</code>文件后缀名）。例如我要引用<a target="_blank" rel="noopener" href="https://github.com/semgrep/semgrep-rules/blob/develop/python/django/security/injection/command/subprocess-injection.yaml">subprocess-injection.yaml</a>中id为<code>subprocess-injection</code>的规则，<code>subprocess-injection.yaml</code>在semgrep-rules仓库中的路径为<code>python/django/security/injection/command/subprocess-injection.yaml</code>，所以这个规则应该以<code>r/python.django.security.injection.command.subprocess-injection.subprocess-injection</code>来引用。我们也可以引用文件路径下的多个规则，比如说如果我以<code>r/python.django.security</code>来引用，就会执行<code>python/django/security/</code>文件夹中所有YAML文件中所有id的规则。</p>
+<p>我们仔细看<a target="_blank" rel="noopener" href="https://github.com/semgrep/semgrep-rules">semgrep-rules</a>的目录组织形式，发现基本上是以程序语言或使用的开发框架作为目录组织的方式。但有时候我们希望面向某个具体要检测的问题（例如远程命令执行RCE）来执行规则，而不是面向某个程序语言或是开发框架。比如说我有一个项目，它使用了多个程序语言和多套开发框架，但我只想知道这个项目有没有RCE隐患，那此时<code>规则文件路径</code>的引用方式就不太方便了。<code>Semgrep Registry</code>官方为此制作了一些<code>规则包</code>，规则包的引用方式格式为<code>p/</code>前缀加上规则包名，规则包名可在<a target="_blank" rel="noopener" href="https://semgrep.dev/explore">Semgrep Registry官方网站</a>上搜索。例如我们要执行<code>cwe-top-25</code>规则包，可以引用为<code>p/cwe-top-25</code></p>
+<p><img src="/2025/01/26/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7Semgrep%EF%BC%8CBandit%E5%8F%8ACodeQL%E7%9A%84%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/ge.jpg" alt="Semgrep官方网站中提供的规则包"></p>
+<h2 id="常用命令介绍"><a href="#常用命令介绍" class="headerlink" title="常用命令介绍"></a>常用命令介绍</h2><p>Semgrep最最常用的命令就是<code>scan</code>：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">semgrep scan --config &lt;规则引用&gt; &lt;待测文件&gt;</span><br></pre></td></tr></table></figure>
+<p>如果规则文件是本地的YAML的话，规则引用就是YAML的路径。如果是在<code>Semgrep Registry</code>中的话，按前面小节叙述的引用方式引用。如果不止引用一套规则，可以多次<code>--config &lt;规则引用&gt;</code>。<code>&lt;规则引用&gt;</code>也可以设为<code>auto</code>，这时Semgrep会根据待测文件的程序语言、所使用的框架等自动筛选规则，但具体筛选策略官方没详细说明。</p>
+<p>待测文件可以指定具体的文件、文件夹，也可以留空，如果留空，默认检测的是当前目录及递归子目录下的文件。</p>
+<p>默认情况下是不生成报告文件的，如要生成报告文件，可根据想生成的报告格式来设置，例如：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">semgrep scan --config &lt;规则引用&gt; &lt;待测文件&gt; --text --text-output=xxxx.txt</span><br><span class="line">semgrep scan --config &lt;规则引用&gt; &lt;待测文件&gt; --sarif --sarif-output=xxxx.sarif</span><br><span class="line">semgrep scan --config &lt;规则引用&gt; &lt;待测文件&gt; --json --json-output=xxxx.json</span><br></pre></td></tr></table></figure>
+
+<p>有时候我们还需要并行计算提高效率：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">semgrep scan -j NUMBER_OF_SUBPROCESSES</span><br></pre></td></tr></table></figure>
+
+<p>另外，使用<code>scan</code>命令时，<code>scan</code>可以省略。</p>
+<p>有时我们需要登录Semgrep获得一些高级能力，例如跨过程和跨文件的数据流分析，登录命令是：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">semgrep login</span><br></pre></td></tr></table></figure>
+
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>本文从Semgrep生态、规则系统和常用命令三个角度出发，带大家对Semgrep有了一个基本的了解。从下一篇文章开始，我将带大家进入Semgrep最核心的部分——规则语法。学会自己编写规则后，我们就可以让Semgrep完成一些我们想要的静态分析任务，而不仅局限在官方提供的规则数据库中。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2025/01/30/Semgrep%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9A%E5%88%9D%E8%AF%86Semgrep/" data-id="cm6kfclzf00003gd262am3yyn" data-title="Semgrep（一）：初识Semgrep" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90/" rel="tag">Python静态分析</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Semgrep/" rel="tag">Semgrep</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-Python静态分析工具Semgrep，Bandit及CodeQL的环境搭建" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2025/01/26/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7Semgrep%EF%BC%8CBandit%E5%8F%8ACodeQL%E7%9A%84%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/" class="article-date">
@@ -219,7 +350,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/Bandit/" style="font-size: 10px;">Bandit</a> <a href="/tags/CodeQL/" style="font-size: 10px;">CodeQL</a> <a href="/tags/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90/" style="font-size: 10px;">Python静态分析</a> <a href="/tags/Semgrep/" style="font-size: 10px;">Semgrep</a>
+      <a href="/tags/Bandit/" style="font-size: 10px;">Bandit</a> <a href="/tags/CodeQL/" style="font-size: 10px;">CodeQL</a> <a href="/tags/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90/" style="font-size: 20px;">Python静态分析</a> <a href="/tags/Semgrep/" style="font-size: 20px;">Semgrep</a>
     </div>
   </div>
 
@@ -239,6 +370,10 @@
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2025/01/30/Semgrep%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9A%E5%88%9D%E8%AF%86Semgrep/">Semgrep（一）：初识Semgrep</a>
+          </li>
         
           <li>
             <a href="/2025/01/26/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7Semgrep%EF%BC%8CBandit%E5%8F%8ACodeQL%E7%9A%84%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/">Python静态分析工具Semgrep，Bandit及CodeQL的环境搭建</a>
