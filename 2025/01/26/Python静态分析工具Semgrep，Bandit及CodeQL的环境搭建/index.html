@@ -1,111 +1,265 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
-  <meta charset="utf-8">
-  
-  
-  <title>Python静态分析工具Semgrep，Bandit及CodeQL的环境搭建 | Hexo</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="Semgrep，Bandit和CodeQL都是做Python静态分析非常实用的工具，熟练掌握这几个工具对于后续漏洞挖掘以及安全研究都大有裨益。本文主要介绍这三个工具的环境搭建基本流程。 Semgrep环境搭建Semgrep包含一系列的工具包，例如Semgrep App，Semgrep CI以及Semgrep CLI等。我们这里只介绍能本地离线运行的Semgrep CLI和VSCode插件。 Sem">
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"fubuki8087.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.22.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":-1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="Semgrep，Bandit和CodeQL都是做Python静态分析非常实用的工具，熟练掌握这几个工具对于后续漏洞挖掘以及安全研究都大有裨益。本文主要介绍这三个工具的环境搭建基本流程。 Semgrep环境搭建Semgrep包含一系列的工具包，例如Semgrep App，Semgrep CI以及Semgrep CLI等。我们这里只介绍能本地离线运行的Semgrep CLI和VSCode插件。 Sem">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Python静态分析工具Semgrep，Bandit及CodeQL的环境搭建">
-<meta property="og:url" content="http://example.com/2025/01/26/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7Semgrep%EF%BC%8CBandit%E5%8F%8ACodeQL%E7%9A%84%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/index.html">
-<meta property="og:site_name" content="Hexo">
+<meta property="og:url" content="https://fubuki8087.github.io/2025/01/26/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7Semgrep%EF%BC%8CBandit%E5%8F%8ACodeQL%E7%9A%84%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/index.html">
+<meta property="og:site_name" content="一点点技术私房菜">
 <meta property="og:description" content="Semgrep，Bandit和CodeQL都是做Python静态分析非常实用的工具，熟练掌握这几个工具对于后续漏洞挖掘以及安全研究都大有裨益。本文主要介绍这三个工具的环境搭建基本流程。 Semgrep环境搭建Semgrep包含一系列的工具包，例如Semgrep App，Semgrep CI以及Semgrep CLI等。我们这里只介绍能本地离线运行的Semgrep CLI和VSCode插件。 Sem">
-<meta property="og:locale" content="en_US">
-<meta property="og:image" content="http://example.com/2025/01/26/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7Semgrep%EF%BC%8CBandit%E5%8F%8ACodeQL%E7%9A%84%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/injection_detection_try.jpg">
-<meta property="og:image" content="http://example.com/2025/01/26/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7Semgrep%EF%BC%8CBandit%E5%8F%8ACodeQL%E7%9A%84%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/semgrep_vscode_issue.jpg">
-<meta property="og:image" content="http://example.com/2025/01/26/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7Semgrep%EF%BC%8CBandit%E5%8F%8ACodeQL%E7%9A%84%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/bandit_report.jpg">
-<meta property="og:image" content="http://example.com/2025/01/26/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7Semgrep%EF%BC%8CBandit%E5%8F%8ACodeQL%E7%9A%84%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/bandit_vscode_issue.jpg">
-<meta property="og:image" content="http://example.com/2025/01/26/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7Semgrep%EF%BC%8CBandit%E5%8F%8ACodeQL%E7%9A%84%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/sarif_report.jpg">
-<meta property="og:image" content="http://example.com/2025/01/26/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7Semgrep%EF%BC%8CBandit%E5%8F%8ACodeQL%E7%9A%84%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/codeql_vscode_cli_path.jpg">
-<meta property="og:image" content="http://example.com/2025/01/26/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7Semgrep%EF%BC%8CBandit%E5%8F%8ACodeQL%E7%9A%84%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/codeql_vscode_visual_report.jpg">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://fubuki8087.github.io/2025/01/26/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7Semgrep%EF%BC%8CBandit%E5%8F%8ACodeQL%E7%9A%84%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/injection_detection_try.jpg">
+<meta property="og:image" content="https://fubuki8087.github.io/2025/01/26/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7Semgrep%EF%BC%8CBandit%E5%8F%8ACodeQL%E7%9A%84%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/semgrep_vscode_issue.jpg">
+<meta property="og:image" content="https://fubuki8087.github.io/2025/01/26/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7Semgrep%EF%BC%8CBandit%E5%8F%8ACodeQL%E7%9A%84%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/bandit_report.jpg">
+<meta property="og:image" content="https://fubuki8087.github.io/2025/01/26/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7Semgrep%EF%BC%8CBandit%E5%8F%8ACodeQL%E7%9A%84%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/bandit_vscode_issue.jpg">
+<meta property="og:image" content="https://fubuki8087.github.io/2025/01/26/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7Semgrep%EF%BC%8CBandit%E5%8F%8ACodeQL%E7%9A%84%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/sarif_report.jpg">
+<meta property="og:image" content="https://fubuki8087.github.io/2025/01/26/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7Semgrep%EF%BC%8CBandit%E5%8F%8ACodeQL%E7%9A%84%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/codeql_vscode_cli_path.jpg">
+<meta property="og:image" content="https://fubuki8087.github.io/2025/01/26/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7Semgrep%EF%BC%8CBandit%E5%8F%8ACodeQL%E7%9A%84%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/codeql_vscode_visual_report.jpg">
 <meta property="article:published_time" content="2025-01-26T07:49:59.000Z">
 <meta property="article:modified_time" content="2025-02-05T07:52:59.889Z">
-<meta property="article:author" content="John Doe">
+<meta property="article:author" content="长庚伴月">
 <meta property="article:tag" content="Python静态分析">
 <meta property="article:tag" content="Semgrep">
 <meta property="article:tag" content="Bandit">
 <meta property="article:tag" content="CodeQL">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://example.com/2025/01/26/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7Semgrep%EF%BC%8CBandit%E5%8F%8ACodeQL%E7%9A%84%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/injection_detection_try.jpg">
-  
-    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
-  
-  
-    <link rel="shortcut icon" href="/favicon.png">
-  
-  
-  
-<link rel="stylesheet" href="/css/style.css">
+<meta name="twitter:image" content="https://fubuki8087.github.io/2025/01/26/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7Semgrep%EF%BC%8CBandit%E5%8F%8ACodeQL%E7%9A%84%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/injection_detection_try.jpg">
 
-  
-    
-<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
 
-  
-  
-<meta name="generator" content="Hexo 7.3.0"></head>
+<link rel="canonical" href="https://fubuki8087.github.io/2025/01/26/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7Semgrep%EF%BC%8CBandit%E5%8F%8ACodeQL%E7%9A%84%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/">
 
-<body>
-  <div id="container">
-    <div id="wrap">
-      <header id="header">
-  <div id="banner"></div>
-  <div id="header-outer" class="outer">
-    <div id="header-title" class="inner">
-      <h1 id="logo-wrap">
-        <a href="/" id="logo">Hexo</a>
-      </h1>
-      
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://fubuki8087.github.io/2025/01/26/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7Semgrep%EF%BC%8CBandit%E5%8F%8ACodeQL%E7%9A%84%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/","path":"2025/01/26/Python静态分析工具Semgrep，Bandit及CodeQL的环境搭建/","title":"Python静态分析工具Semgrep，Bandit及CodeQL的环境搭建"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Python静态分析工具Semgrep，Bandit及CodeQL的环境搭建 | 一点点技术私房菜</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
     </div>
-    <div id="header-inner" class="inner">
-      <nav id="main-nav">
-        <a id="main-nav-toggle" class="nav-icon"><span class="fa fa-bars"></span></a>
-        
-          <a class="main-nav-link" href="/">Home</a>
-        
-          <a class="main-nav-link" href="/archives">Archives</a>
-        
-      </nav>
-      <nav id="sub-nav">
-        
-        
-          <a class="nav-icon" href="/atom.xml" title="RSS Feed"><span class="fa fa-rss"></span></a>
-        
-        <a class="nav-icon nav-search-btn" title="Search"><span class="fa fa-search"></span></a>
-      </nav>
-      <div id="search-form-wrap">
-        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://example.com"></form>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">一点点技术私房菜</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
       </div>
     </div>
   </div>
-</header>
 
-      <div class="outer">
-        <section id="main"><article id="post-Python静态分析工具Semgrep，Bandit及CodeQL的环境搭建" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2025/01/26/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7Semgrep%EF%BC%8CBandit%E5%8F%8ACodeQL%E7%9A%84%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/" class="article-date">
-  <time class="dt-published" datetime="2025-01-26T07:49:59.000Z" itemprop="datePublished">2025-01-26</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
+</header>
         
   
-    <h1 class="p-name article-title" itemprop="headline name">
-      Python静态分析工具Semgrep，Bandit及CodeQL的环境搭建
-    </h1>
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Semgrep%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA"><span class="nav-number">1.</span> <span class="nav-text">Semgrep环境搭建</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Semgrep-CLI%E7%9A%84%E5%AE%89%E8%A3%85"><span class="nav-number">1.1.</span> <span class="nav-text">Semgrep CLI的安装</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-%E5%88%9B%E5%BB%BASemgrep%E8%99%9A%E6%8B%9F%E7%8E%AF%E5%A2%83%E7%9B%AE%E5%BD%95"><span class="nav-number">1.1.1.</span> <span class="nav-text">1. 创建Semgrep虚拟环境目录</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-%E5%AE%89%E8%A3%85Semgrep-CLI"><span class="nav-number">1.1.2.</span> <span class="nav-text">2. 安装Semgrep CLI</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-%E5%B0%9D%E8%AF%95%E7%AE%80%E5%8D%95%E6%A1%88%E4%BE%8B"><span class="nav-number">1.1.3.</span> <span class="nav-text">3. 尝试简单案例</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Semgrep-VSCode%E6%8F%92%E4%BB%B6%E7%9A%84%E5%AE%89%E8%A3%85%E4%B8%8E%E4%BD%BF%E7%94%A8"><span class="nav-number">1.2.</span> <span class="nav-text">Semgrep VSCode插件的安装与使用</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Bandit%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA"><span class="nav-number">2.</span> <span class="nav-text">Bandit环境搭建</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Bandit-CLI%E7%9A%84%E5%AE%89%E8%A3%85"><span class="nav-number">2.1.</span> <span class="nav-text">Bandit CLI的安装</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-%E5%88%9B%E5%BB%BABandit%E8%99%9A%E6%8B%9F%E7%8E%AF%E5%A2%83%E7%9B%AE%E5%BD%95"><span class="nav-number">2.1.1.</span> <span class="nav-text">1. 创建Bandit虚拟环境目录</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-%E5%AE%89%E8%A3%85Bandit-CLI"><span class="nav-number">2.1.2.</span> <span class="nav-text">2. 安装Bandit CLI</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-%E5%B0%9D%E8%AF%95%E7%AE%80%E5%8D%95%E6%A1%88%E4%BE%8B-1"><span class="nav-number">2.1.3.</span> <span class="nav-text">3. 尝试简单案例</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Bandit-VSCode%E6%8F%92%E4%BB%B6%E7%9A%84%E5%AE%89%E8%A3%85%E4%B8%8E%E4%BD%BF%E7%94%A8"><span class="nav-number">2.2.</span> <span class="nav-text">Bandit VSCode插件的安装与使用</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CodeQL"><span class="nav-number">3.</span> <span class="nav-text">CodeQL</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#CodeQL-CLI%E5%92%8CCodeQL-SDK%E7%9A%84%E5%AE%89%E8%A3%85"><span class="nav-number">3.1.</span> <span class="nav-text">CodeQL CLI和CodeQL SDK的安装</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-CodeQL-Bundle%E7%9A%84%E4%B8%8B%E8%BD%BD%E5%AE%89%E8%A3%85"><span class="nav-number">3.1.1.</span> <span class="nav-text">1. CodeQL Bundle的下载安装</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F%E7%9A%84%E8%AE%BE%E7%BD%AE"><span class="nav-number">3.1.2.</span> <span class="nav-text">2. 环境变量的设置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-%E5%B0%9D%E8%AF%95%E7%AE%80%E5%8D%95%E6%A1%88%E4%BE%8B-2"><span class="nav-number">3.1.3.</span> <span class="nav-text">3. 尝试简单案例</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CodeQL-VSCode%E6%8F%92%E4%BB%B6%E5%AE%89%E8%A3%85"><span class="nav-number">3.2.</span> <span class="nav-text">CodeQL VSCode插件安装</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CodeQL%E6%95%B0%E6%8D%AE%E5%BA%93%E6%96%87%E4%BB%B6%E7%9A%84%E4%B8%8B%E8%BD%BD"><span class="nav-number">3.3.</span> <span class="nav-text">CodeQL数据库文件的下载</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B0%8F%E7%BB%93"><span class="nav-number">4.</span> <span class="nav-text">小结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">长庚伴月</p>
+  <div class="site-description" itemprop="description">一个爱思考的安全研究员</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">3</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/fubuki8087" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;fubuki8087" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+  <div class="cc-license animated" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc/4.0/deed.zh-hans" class="cc-opacity" rel="noopener" target="_blank"><img src="https://cdnjs.cloudflare.com/ajax/libs/creativecommons-vocabulary/2020.11.3/assets/license_badges/small/by_nc.svg" alt="Creative Commons"></a>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
   
 
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://fubuki8087.github.io/2025/01/26/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7Semgrep%EF%BC%8CBandit%E5%8F%8ACodeQL%E7%9A%84%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="长庚伴月">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="一点点技术私房菜">
+      <meta itemprop="description" content="一个爱思考的安全研究员">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Python静态分析工具Semgrep，Bandit及CodeQL的环境搭建 | 一点点技术私房菜">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Python静态分析工具Semgrep，Bandit及CodeQL的环境搭建
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2025-01-26 15:49:59" itemprop="dateCreated datePublished" datetime="2025-01-26T15:49:59+08:00">2025-01-26</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2025-02-05 15:52:59" itemprop="dateModified" datetime="2025-02-05T15:52:59+08:00">2025-02-05</time>
+    </span>
+
+  
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>2.6k</span>
+    </span>
+</div>
+
+        </div>
       </header>
+
     
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <p>Semgrep，Bandit和CodeQL都是做Python静态分析非常实用的工具，熟练掌握这几个工具对于后续漏洞挖掘以及安全研究都大有裨益。本文主要介绍这三个工具的环境搭建基本流程。</p>
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>Semgrep，Bandit和CodeQL都是做Python静态分析非常实用的工具，熟练掌握这几个工具对于后续漏洞挖掘以及安全研究都大有裨益。本文主要介绍这三个工具的环境搭建基本流程。</p>
 <h2 id="Semgrep环境搭建"><a href="#Semgrep环境搭建" class="headerlink" title="Semgrep环境搭建"></a>Semgrep环境搭建</h2><p>Semgrep包含一系列的工具包，例如<code>Semgrep App</code>，<code>Semgrep CI</code>以及<code>Semgrep CLI</code>等。我们这里只介绍能本地离线运行的<code>Semgrep CLI</code>和VSCode插件。</p>
 <h3 id="Semgrep-CLI的安装"><a href="#Semgrep-CLI的安装" class="headerlink" title="Semgrep CLI的安装"></a>Semgrep CLI的安装</h3><p>前置条件：</p>
 <ul>
@@ -208,137 +362,123 @@
 <p>如果你使用CodeQL VSCode插件，这个过程会更方便。一般来说，如果你在本地打开了一个Github上托管的有影响力的项目，它会主动提示该项目有在线的数据库文件可以下载，如果没有提示，在数据库文件加载那一栏，也会有一个在线的导入方式，可以尝试在线获得这个项目的数据库文件。</p>
 <h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>本文详细介绍了<code>Semgrep</code>，<code>Bandit</code>以及<code>CodeQL</code>这三款常用的Python静态分析工具的环境搭建步骤，并且各自都给了一个上手案例。在后面的文章中，我们会更加深入地学习这三款静态分析工具的使用方法。</p>
 
-      
     </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2025/01/26/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7Semgrep%EF%BC%8CBandit%E5%8F%8ACodeQL%E7%9A%84%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/" data-id="cm6rl4m2r00009wd21bzb5bv4" data-title="Python静态分析工具Semgrep，Bandit及CodeQL的环境搭建" class="article-share-link"><span class="fa fa-share">Share</span></a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Bandit/" rel="tag">Bandit</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/CodeQL/" rel="tag">CodeQL</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90/" rel="tag">Python静态分析</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Semgrep/" rel="tag">Semgrep</a></li></ul>
 
+    
+    
+    
+
+    <footer class="post-footer">
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>本文作者： </strong>长庚伴月
+  </li>
+  <li class="post-copyright-link">
+      <strong>本文链接：</strong>
+      <a href="https://fubuki8087.github.io/2025/01/26/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7Semgrep%EF%BC%8CBandit%E5%8F%8ACodeQL%E7%9A%84%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/" title="Python静态分析工具Semgrep，Bandit及CodeQL的环境搭建">https://fubuki8087.github.io/2025/01/26/Python静态分析工具Semgrep，Bandit及CodeQL的环境搭建/</a>
+  </li>
+  <li class="post-copyright-license">
+      <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc/4.0/deed.zh-hans" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90/" rel="tag"># Python静态分析</a>
+              <a href="/tags/Semgrep/" rel="tag"># Semgrep</a>
+              <a href="/tags/Bandit/" rel="tag"># Bandit</a>
+              <a href="/tags/CodeQL/" rel="tag"># CodeQL</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+            </div>
+            <div class="post-nav-item">
+                <a href="/2025/01/30/Semgrep%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9A%E5%88%9D%E8%AF%86Semgrep/" rel="next" title="Semgrep（一）：初识Semgrep">
+                  Semgrep（一）：初识Semgrep <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
     </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">长庚伴月</span>
   </div>
-  
-    
-<nav id="article-nav">
-  
-    <a href="/2025/01/30/Semgrep%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9A%E5%88%9D%E8%AF%86Semgrep/" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Newer</strong>
-      <div class="article-nav-title">
-        
-          Semgrep（一）：初识Semgrep
-        
-      </div>
-    </a>
-  
-  
-</nav>
-
-  
-</article>
-
-
-</section>
-        
-          <aside id="sidebar">
-  
-    
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Tags</h3>
-    <div class="widget">
-      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Bandit/" rel="tag">Bandit</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CodeQL/" rel="tag">CodeQL</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90/" rel="tag">Python静态分析</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Semgrep/" rel="tag">Semgrep</a></li></ul>
-    </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">8k</span>
+  </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
   </div>
-
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Tag Cloud</h3>
-    <div class="widget tagcloud">
-      <a href="/tags/Bandit/" style="font-size: 10px;">Bandit</a> <a href="/tags/CodeQL/" style="font-size: 10px;">CodeQL</a> <a href="/tags/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90/" style="font-size: 20px;">Python静态分析</a> <a href="/tags/Semgrep/" style="font-size: 20px;">Semgrep</a>
-    </div>
-  </div>
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Archives</h3>
-    <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/02/">February 2025</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/01/">January 2025</a></li></ul>
-    </div>
-  </div>
-
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Recent Posts</h3>
-    <div class="widget">
-      <ul>
-        
-          <li>
-            <a href="/2025/02/03/Semgrep%EF%BC%88%E4%BA%8C%EF%BC%89%EF%BC%9A%E6%A8%A1%E5%BC%8F%E8%AF%AD%E6%B3%95/">Semgrep（二）：模式语法</a>
-          </li>
-        
-          <li>
-            <a href="/2025/01/30/Semgrep%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9A%E5%88%9D%E8%AF%86Semgrep/">Semgrep（一）：初识Semgrep</a>
-          </li>
-        
-          <li>
-            <a href="/2025/01/26/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7Semgrep%EF%BC%8CBandit%E5%8F%8ACodeQL%E7%9A%84%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/">Python静态分析工具Semgrep，Bandit及CodeQL的环境搭建</a>
-          </li>
-        
-      </ul>
-    </div>
-  </div>
-
-  
-</aside>
-        
-      </div>
-      <footer id="footer">
-  
-  <div class="outer">
-    <div id="footer-info" class="inner">
-      
-      &copy; 2025 John Doe<br>
-      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
-    </div>
-  </div>
-</footer>
 
     </div>
-    <nav id="mobile-nav">
-  
-    <a href="/" class="mobile-nav-link">Home</a>
-  
-    <a href="/archives" class="mobile-nav-link">Archives</a>
-  
-</nav>
-    
-
-
-<script src="/js/jquery-3.6.4.min.js"></script>
-
-
+  </footer>
 
   
-<script src="/fancybox/jquery.fancybox.min.js"></script>
-
-
-
-
-<script src="/js/script.js"></script>
-
-
-
-
-
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
   </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+  <script class="next-config" data-name="mermaid" type="application/json">{"enable":true,"theme":{"light":"default","dark":"dark"},"js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.4.0/mermaid.min.js","integrity":"sha256-G8ouPAnw4zzMbnAenHnVz6h9XpKbNdOkrqTh7AadyHs="}}</script>
+  <script src="/js/third-party/tags/mermaid.js"></script>
+
+
+
+
+
+  
+
+
+
+
+
 </body>
 </html>
