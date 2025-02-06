@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"fubuki8087.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.22.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":true,"style":"mac"},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":-1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="在前面介绍Semgrep的文章中，我们没有涉足它的一个高级特性——数据流分析。Semgrep CE版提供了过程内的数据流分析能力，而Semgrep Code版提供了跨过程和跨文件的数据流分析能力。Semgrep是将不同语言的抽象语法树翻译成统一的中间语言（IL），针对IL进行数据流分析。需要注意的是，目前在抽象语法树翻译成IL的过程中，对于不同语言的支持力度不一样，导致Semgrep的数据流分析还">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Semgrep（三）：数据流分析">
+<meta property="og:url" content="https://fubuki8087.github.io/2025/02/06/Semgrep%EF%BC%88%E4%B8%89%EF%BC%89%EF%BC%9A%E6%95%B0%E6%8D%AE%E6%B5%81%E5%88%86%E6%9E%90/index.html">
+<meta property="og:site_name" content="一点点技术私房菜">
+<meta property="og:description" content="在前面介绍Semgrep的文章中，我们没有涉足它的一个高级特性——数据流分析。Semgrep CE版提供了过程内的数据流分析能力，而Semgrep Code版提供了跨过程和跨文件的数据流分析能力。Semgrep是将不同语言的抽象语法树翻译成统一的中间语言（IL），针对IL进行数据流分析。需要注意的是，目前在抽象语法树翻译成IL的过程中，对于不同语言的支持力度不一样，导致Semgrep的数据流分析还">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-02-06T08:20:18.000Z">
+<meta property="article:modified_time" content="2025-02-06T17:19:01.472Z">
+<meta property="article:author" content="长庚伴月">
+<meta property="article:tag" content="Python静态分析">
+<meta property="article:tag" content="Semgrep">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://fubuki8087.github.io/2025/02/06/Semgrep%EF%BC%88%E4%B8%89%EF%BC%89%EF%BC%9A%E6%95%B0%E6%8D%AE%E6%B5%81%E5%88%86%E6%9E%90/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://fubuki8087.github.io/2025/02/06/Semgrep%EF%BC%88%E4%B8%89%EF%BC%89%EF%BC%9A%E6%95%B0%E6%8D%AE%E6%B5%81%E5%88%86%E6%9E%90/","path":"2025/02/06/Semgrep（三）：数据流分析/","title":"Semgrep（三）：数据流分析"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Semgrep（三）：数据流分析 | 一点点技术私房菜</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<style>.darkmode--activated{--body-bg-color:#282828;--content-bg-color:#333;--card-bg-color:#555;--text-color:#ccc;--blockquote-color:#bbb;--link-color:#ccc;--link-hover-color:#eee;--brand-color:#ddd;--brand-hover-color:#ddd;--table-row-odd-bg-color:#282828;--table-row-hover-bg-color:#363636;--menu-item-bg-color:#555;--btn-default-bg:#222;--btn-default-color:#ccc;--btn-default-border-color:#555;--btn-default-hover-bg:#666;--btn-default-hover-color:#ccc;--btn-default-hover-border-color:#666;--highlight-background:#282b2e;--highlight-foreground:#a9b7c6;--highlight-gutter-background:#34393d;--highlight-gutter-foreground:#9ca9b6}.darkmode--activated img{opacity:.75}.darkmode--activated img:hover{opacity:.9}.darkmode--activated code{color:#69dbdc;background:0 0}button.darkmode-toggle{z-index:9999}.darkmode-ignore,img{display:flex!important}.beian img{display:inline-block!important}</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">一点点技术私房菜</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B8%B8%E9%87%8F%E4%BC%A0%E6%92%AD"><span class="nav-number">1.</span> <span class="nav-text">常量传播</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B1%A1%E7%82%B9%E5%88%86%E6%9E%90"><span class="nav-number">2.</span> <span class="nav-text">污点分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Source"><span class="nav-number">2.1.</span> <span class="nav-text">Source</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Sanitizer"><span class="nav-number">2.2.</span> <span class="nav-text">Sanitizer</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Sink"><span class="nav-number">2.3.</span> <span class="nav-text">Sink</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Propagator"><span class="nav-number">2.4.</span> <span class="nav-text">Propagator</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%B7%A8%E8%BF%87%E7%A8%8B%E5%88%86%E6%9E%90"><span class="nav-number">2.5.</span> <span class="nav-text">跨过程分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B1%A1%E7%82%B9%E5%88%86%E6%9E%90%E7%9A%84%E6%95%8F%E6%84%9F%E6%80%A7"><span class="nav-number">2.6.</span> <span class="nav-text">污点分析的敏感性</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B0%8F%E7%BB%93"><span class="nav-number">3.</span> <span class="nav-text">小结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">长庚伴月</p>
+  <div class="site-description" itemprop="description">一个爱思考的安全研究员</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">4</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/fubuki8087" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;fubuki8087" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+  <div class="cc-license animated" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc/4.0/deed.zh-hans" class="cc-opacity" rel="noopener" target="_blank"><img src="https://cdnjs.cloudflare.com/ajax/libs/creativecommons-vocabulary/2020.11.3/assets/license_badges/small/by_nc.svg" alt="Creative Commons"></a>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://fubuki8087.github.io/2025/02/06/Semgrep%EF%BC%88%E4%B8%89%EF%BC%89%EF%BC%9A%E6%95%B0%E6%8D%AE%E6%B5%81%E5%88%86%E6%9E%90/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="长庚伴月">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="一点点技术私房菜">
+      <meta itemprop="description" content="一个爱思考的安全研究员">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Semgrep（三）：数据流分析 | 一点点技术私房菜">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Semgrep（三）：数据流分析
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2025-02-06 16:20:18" itemprop="dateCreated datePublished" datetime="2025-02-06T16:20:18+08:00">2025-02-06</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2025-02-07 01:19:01" itemprop="dateModified" datetime="2025-02-07T01:19:01+08:00">2025-02-07</time>
+    </span>
+
+  
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>3.9k</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>在前面介绍Semgrep的文章中，我们没有涉足它的一个高级特性——数据流分析。Semgrep CE版提供了过程内的数据流分析能力，而Semgrep Code版提供了跨过程和跨文件的数据流分析能力。Semgrep是将不同语言的抽象语法树翻译成统一的中间语言（IL），针对IL进行数据流分析。需要注意的是，目前在抽象语法树翻译成IL的过程中，对于不同语言的支持力度不一样，导致Semgrep的数据流分析还在逐渐完善中，一些更复杂的分析需求可能还是需要诉诸于更加强大的重量型工具（例如CodeQL）。这篇文章我们将介绍Semgrep支持的两类数据流分析任务：<code>常量传播</code>和<code>污点分析</code>。</p>
+<h2 id="常量传播"><a href="#常量传播" class="headerlink" title="常量传播"></a>常量传播</h2><p>在上一篇文章<a href="/2025/02/03/Semgrep%EF%BC%88%E4%BA%8C%EF%BC%89%EF%BC%9A%E6%A8%A1%E5%BC%8F%E8%AF%AD%E6%B3%95/" title="Semgrep（二）：模式语法">《Semgrep（二）：模式语法》</a>里介绍<code>&quot;...&quot;</code>可以表示任意常量字符串的时候，我们提到了Semgrep具有过程内的常量传播数据流分析能力。常量传播分析用于跟踪变量在程序中的某个给定点是否<strong>必定</strong>携带一个常量值，并且能知道这个常数值是什么。有了常量传播分析，我们在定义一些常量匹配规则的时候，就能够匹配到一些虽然字面上是可变量，但实际上确只可能为某个常量的情况，减少漏报。</p>
+<p>需要注意，“必定”这个词反映了，Semgrep的常量传播分析是Complete的，而不Sound，它只有在保证某个变量在任何情况下它的值都只可能是常量的时候，才会在分析处理中把它视作常量。例如下面是一个实际例子，我们希望找出可能具有注入风险的<code>eval()</code>调用，如果<code>eval()</code>的参数是常量，那就可以排除掉注入风险：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">patterns:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">pattern:</span> <span class="string">eval(...)</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">pattern-not:</span> <span class="string">eval(&quot;...&quot;)</span></span><br></pre></td></tr></table></figure>
+
+<p>被匹配的代码例子如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">test</span>(<span class="params">arg</span>):</span><br><span class="line">   <span class="keyword">if</span> arg <span class="keyword">is</span> <span class="keyword">not</span> <span class="literal">None</span>:</span><br><span class="line">      x = arg</span><br><span class="line">      y = <span class="string">&quot;y&quot;</span></span><br><span class="line">      z = <span class="string">&quot;z1&quot;</span></span><br><span class="line">   <span class="keyword">else</span>:</span><br><span class="line">      x = <span class="string">&quot;x&quot;</span></span><br><span class="line">      y = <span class="string">&quot;y&quot;</span></span><br><span class="line">      z = <span class="string">&quot;z2&quot;</span></span><br><span class="line">   <span class="comment"># `x` is not guaranteed to be constant (it could be an alias for `arg`)</span></span><br><span class="line">   <span class="comment"># ruleid: constant-propagation-example</span></span><br><span class="line">   <span class="built_in">eval</span>(x)</span><br><span class="line">   <span class="comment"># `y` is always the constant string `&quot;y&quot;`</span></span><br><span class="line">   <span class="comment"># ok: constant-propagation-example</span></span><br><span class="line">   <span class="built_in">eval</span>(y)</span><br><span class="line">   <span class="comment"># `z` is always a constant, either `&quot;z1&quot;` or `&quot;z2&quot;`</span></span><br><span class="line">   <span class="comment"># ok: constant-propagation-example</span></span><br><span class="line">   <span class="built_in">eval</span>(z)</span><br></pre></td></tr></table></figure>
+
+<p><code>eval(x)</code>会被标记出来，因为虽然它可能是常数<code>&quot;x&quot;</code>，但也有可能被传入的参数<code>arg</code>控制，<code>arg</code>值在过程内分析的条件下，不能确定为常数，因此<code>x</code>是可能为可变量的，而<code>y</code>和<code>z</code>都是百分百确定为常量的。</p>
+<p>我们继续探究<code>z</code>，可以发现虽然<code>z</code>保证为常量，但这个常量值却是不一定的，我们可以尝试着把规则中的<code>eval(&quot;...&quot;)</code>改成<code>eval(&quot;z1&quot;)</code>，发现<code>eval(z)</code>此时就会标记出来了，但如果我们进一步把代码中的<code>z = &quot;z2&quot;</code>也改成<code>z = &quot;z1&quot;</code>，<code>eval(z)</code>的标记又会消失。这再一次说明Semgrep的常量传播是Complete分析，除非确信<code>z</code>只能为<code>&quot;z1&quot;</code>，它才会做出判断。</p>
+<p>Semgrep中对于常量做了一个假设，那就是常量本身在整个生命周期中是不可变的，即使将常量传给函数后，常量本身也不会发生变化。但对于一些语言（比如C和Ruby）来说并不完全是这样，比如对下面这个C代码应用规则<code>printf(&quot;...&quot;)</code>就会产生误报：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">mutate</span><span class="params">(<span class="type">char</span> *b)</span> &#123;</span><br><span class="line">  b[<span class="number">3</span>] = <span class="string">&#x27;\0&#x27;</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span> &#123;</span><br><span class="line">  <span class="type">char</span> a[<span class="number">128</span>] = <span class="string">&quot;Hello World&quot;</span>;</span><br><span class="line">  <span class="built_in">printf</span>(a);</span><br><span class="line">  mutate(a);</span><br><span class="line">  <span class="built_in">printf</span>(a);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>第一个<code>printf</code>应该被标记，第二个<code>printf</code>不应该被标记，但由于这个假设的存在，Semgrep认为调用了<code>mutate(a)</code>后不会对<code>a</code>的值发生改变，所以Semgrep错误地标记了第二个<code>printf</code>。</p>
+<p>但是Semgrep也为降低误报做了一些工作，它排除了一种情况：若是调用常量对象自己的方法，且忽略返回值的时候，Semgrep默认常量对象发生了改变，比方说下面这个Ruby的例子：</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">test</span>(<span class="params">x</span>)</span><br><span class="line">  a = <span class="string">&quot;foo&quot;</span></span><br><span class="line">  <span class="comment">#ruleid: test</span></span><br><span class="line">  foo(a)</span><br><span class="line">  a &lt;&lt; x <span class="comment"># equivalent to `a.&lt;&lt;(x)&#x27;&#x27;</span></span><br><span class="line">  <span class="comment"># `a&#x27; isn&#x27;t a constant string anymore</span></span><br><span class="line">  <span class="comment">#OK: test</span></span><br><span class="line">  foo(a)</span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+<p>第一个<code>foo(a)</code>显然应该标记，然后执行了<code>a &lt;&lt; x</code>字符串追加操作，这一步骤实际上是调用了<code>a</code>字符串对象的方法<code>a.&lt;&lt;(x)</code>，且该方法的返回值被忽略了（没有使用返回值），满足这个条件的情况下，Semgrep认为<code>a</code>已经改变，不再是常量，第二个<code>foo(a)</code>不会被标记。</p>
+<p>最后，常量传播分析也可以手动关闭，只要在规则的<code>options</code>项中添加<code>constant_propagation: false</code>就行。例如规则：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">rules:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">id:</span> <span class="string">constant-propagation-example</span></span><br><span class="line">    <span class="attr">options:</span></span><br><span class="line">      <span class="attr">constant_propagation:</span> <span class="literal">false</span></span><br><span class="line">    <span class="attr">patterns:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">pattern:</span> <span class="string">eval(...)</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">pattern-not:</span> <span class="string">eval(&quot;...&quot;)</span></span><br><span class="line">    <span class="attr">message:</span> <span class="string">Found</span> <span class="string">call</span> <span class="string">to</span> <span class="string">&#x27;eval&#x27;</span> <span class="string">on</span> <span class="string">non-constant</span> <span class="string">data</span></span><br><span class="line">    <span class="attr">languages:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">python</span></span><br><span class="line">    <span class="attr">severity:</span> <span class="string">WARNING</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="污点分析"><a href="#污点分析" class="headerlink" title="污点分析"></a>污点分析</h2><p>污点分析有四个重要概念：</p>
+<ul>
+<li>Source：定义污点源</li>
+<li>Sink：定义污点可能传播到的目标位置</li>
+<li>Sanitizer：定义污点在什么情况下会消失</li>
+<li>Propagator：定义污点是如何传播的</li>
+</ul>
+<p>那么污点分析的任务就是，污点从Source开始，以Propagator方式传播，并去除掉遇到Sanitizer的污点，分析是否会传播到Sink。</p>
+<p>Semgrep对于以上四个概念，分别由下面几个规则项定义：</p>
+<ul>
+<li><code>pattern-sources</code></li>
+<li><code>pattern-sinks</code></li>
+<li><code>pattern-sanitizers</code></li>
+<li><code>pattern-propagators</code></li>
+</ul>
+<p>这四个规则项都可以通过<code>pattern</code>定义，每一项的子项之间是以“或”规则连接起来，每一项中定义的元变量在项与项之间不互通。<code>pattern-sources</code>和<code>pattern-sinks</code>是必需项，其他的可以视情况设置或保持默认。</p>
+<p>最重要的是，污点分析必须要在规则中明确设置<code>mode: taint</code>，以下是一个规则例子和被匹配的代码示例：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">mode:</span> <span class="string">taint</span></span><br><span class="line"><span class="attr">pattern-sources:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">pattern:</span> <span class="string">get_user_input(...)</span></span><br><span class="line"><span class="attr">pattern-sanitizers:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">pattern:</span> <span class="string">sanitize_input(...)</span></span><br><span class="line"><span class="attr">pattern-sinks:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">pattern:</span> <span class="string">html_output(...)</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">pattern:</span> <span class="string">eval(...)</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">route1</span>():</span><br><span class="line">    data = get_user_input()</span><br><span class="line">    data = sanitize_input(data)</span><br><span class="line">    <span class="comment"># ok: taint-example</span></span><br><span class="line">    <span class="keyword">return</span> html_output(data)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">route2</span>():</span><br><span class="line">    data = get_user_input()</span><br><span class="line">    <span class="comment"># ruleid: taint-example</span></span><br><span class="line">    <span class="keyword">return</span> html_output(data)</span><br></pre></td></tr></table></figure>
+
+<p>如果Source能传播到Sink，Semgrep会在Sink位置标注出来。</p>
+<h3 id="Source"><a href="#Source" class="headerlink" title="Source"></a>Source</h3><p><code>pattern-sources</code>中有两个重要的选项：<code>exact</code>和<code>by-side-effect</code>。一般情况下，当我们定义Source点的时候，Semgrep会把匹配到的模式其下所有子表达式都看成Source点，譬如<code>source(func(x))</code>如果我们定义Source点模式为<code>source(...)</code>的话，那么不仅<code>source(func(x))</code>会被标记为Source点，<code>func(x)</code>和<code>x</code>都会标记为Source点。若要避免这个情况，需要设置<code>exact: true</code>，类似于这样：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">pattern-sources:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">pattern:</span> <span class="string">source(...)</span></span><br><span class="line">    <span class="attr">exact:</span> <span class="literal">true</span></span><br></pre></td></tr></table></figure>
+
+<p>有时我们希望将污点源指定在某个具体的参数中，而不是函数调用的返回值，比如说像这样：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">make_tainted(x)</span><br><span class="line">sink(x)</span><br></pre></td></tr></table></figure>
+
+<p>我们可以设置<code>by-side-effect: true</code>并配合<code>focus-metavariable</code>元变量操作来进行，比如说这样：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">pattern-sources:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">patterns:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">pattern:</span> <span class="string">make_tainted($X)</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">focus-metavariable:</span> <span class="string">$X</span></span><br><span class="line">    <span class="attr">by-side-effect:</span> <span class="literal">true</span></span><br></pre></td></tr></table></figure>
+
+<p>此时就可以将参数<code>x</code>定义为污点源了。当<code>by-side-effect = true</code>的时候，不仅<code>x</code>为污点源，<code>make_tainted(x)</code>仍然也是污点源，如果我们仅需要<code>x</code>为污点源，应该设置<code>by-side-effect: only</code>。</p>
+<p>这里大家发现一个问题没？刚刚不是说到了，如果没设置<code>exact: true</code>时，子表达式也会作为Source点，那为什么还需要<code>by-side-effect</code>呢？这是因为子表达式只会匹配第一次出现的位置，除非第一次出现就马上传播出去，类似于<code>source(sink(x))</code>。</p>
+<p>我们还可以对函数传入的参数设为Source点，比如：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">pattern-sources:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">patterns:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">pattern-inside:</span> <span class="string">|</span></span><br><span class="line"><span class="string">        def foo($X, ...):</span></span><br><span class="line"><span class="string">          ...</span></span><br><span class="line"><span class="string"></span>    <span class="bullet">-</span> <span class="attr">focus-metavariable:</span> <span class="string">$X</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="Sanitizer"><a href="#Sanitizer" class="headerlink" title="Sanitizer"></a>Sanitizer</h3><p><code>pattern-sanitizers</code>也有<code>exact</code>和<code>by-side-effect</code>选项，用途跟<code>pattern-sources</code>差不多，就不再赘述了。</p>
+<h3 id="Sink"><a href="#Sink" class="headerlink" title="Sink"></a>Sink</h3><p><code>pattern-sinks</code>只有<code>exact</code>选项，没有<code>by-side-effect</code>选项。跟Source和Sanitizer不同，<strong><code>pattern-sinks</code>的<code>exact</code>选项默认是<code>true</code>而不是<code>false</code></strong>，也就是说，下面这个例子除非你显式设置<code>exact: true</code>，不然是不会报阳性的：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sink(<span class="string">&quot;foo&quot;</span> <span class="keyword">if</span> tainted <span class="keyword">else</span> <span class="string">&quot;bar&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>因为<code>sink()</code>的参数值只可能为<code>&quot;foo&quot;</code>或<code>&quot;bar&quot;</code>，跟<code>tainted</code>没有直接的数据流传递关系（这是一种控制依赖而非数据依赖）。这时就需要显式设置<code>exact: true</code>来让Semgrep明白，污点匹配到子表达式也算进入了Sink点。</p>
+<p>你可以很灵活的设置Sink点的具体位置，比如说函数参数：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">pattern-sinks:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">patterns:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">pattern:</span> <span class="string">sink($SINK,</span> <span class="string">...)</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">focus-metavariable:</span> <span class="string">$SINK</span></span><br></pre></td></tr></table></figure>
+
+<p>还有数组索引：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">pattern-sinks:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">patterns:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">pattern-inside:</span> <span class="string">$ARRAY[$SINK]</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">focus-metavariable:</span> <span class="string">$SINK</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="Propagator"><a href="#Propagator" class="headerlink" title="Propagator"></a>Propagator</h3><p>Semgrep默认支持以下几类语句的污点传播：</p>
+<ul>
+<li><code>x = tainted</code>：赋值语句，右值若是污点，则左值也是污点</li>
+<li><code>x op tainted</code>：运算符，若运算符中的一个操作数是污点，则运算结果也是污点</li>
+<li><code>func(..., tainted, ...)</code>：函数，若某个函数参数是污点，则函数的返回值也是污点</li>
+</ul>
+<p>但有些情况下，这几个默认污点传播规则不能完全满足我们的需求，比如说<code>strcpy(dst, src)</code>我们就需要从<code>src</code>传到<code>dst</code>，还有像一些容器变量可能会有一些诸如<code>add</code>，<code>push</code>，<code>append</code>的方法，比如说<code>s.add(x)</code>，我们需要从<code>x</code>传到<code>s</code>。</p>
+<p>这时我们需要自己定义污点传播规则，请注意，<code>pattern-propagators</code>需要登录Semgrep使用专业版引擎。</p>
+<p><code>pattern-propagators</code>的定义很简单，通过<code>pattern</code>定位语句模式，再用<code>from</code>和<code>to</code>定义从哪个元变量传到哪个元变量，例如：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">pattern-propagators:</span></span><br><span class="line"><span class="bullet">-</span> <span class="attr">pattern:</span> <span class="string">strcpy($DST,</span> <span class="string">$SRC)</span></span><br><span class="line">  <span class="attr">from:</span> <span class="string">$SRC</span></span><br><span class="line">  <span class="attr">to:</span> <span class="string">$DST</span></span><br></pre></td></tr></table></figure>
+
+<p>以及</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">pattern-propagators:</span></span><br><span class="line"><span class="bullet">-</span> <span class="attr">pattern:</span> <span class="string">$S.add($E)</span></span><br><span class="line">  <span class="attr">from:</span> <span class="string">$E</span></span><br><span class="line">  <span class="attr">to:</span> <span class="string">$S</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="跨过程分析"><a href="#跨过程分析" class="headerlink" title="跨过程分析"></a>跨过程分析</h3><p>Semgrep支持跨过程污点分析，包括文件内的跨函数分析，以及跨文件分析。但跨过程分析需要登录Semgrep使用专业版引擎。</p>
+<p>如果使用文件内的跨函数分析，需要在CLI中加上参数<code>--pro-intrafile</code>。</p>
+<p>如果使用跨文件分析，首先需要在规则中添加<code>interfile: true</code>选项：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">options:</span></span><br><span class="line">  <span class="attr">interfile:</span> <span class="literal">true</span></span><br></pre></td></tr></table></figure>
+
+<p>然后还需要在CLI中加上参数<code>--pro</code>。并且注意，跨文件分析会极大消耗内存。</p>
+<h3 id="污点分析的敏感性"><a href="#污点分析的敏感性" class="headerlink" title="污点分析的敏感性"></a>污点分析的敏感性</h3><p>Semgrep的污点分析是<code>成员敏感</code>的，也就是说，若<code>a.b</code>是污点，不代表<code>a</code>和<code>a.c</code>是污点；但若<code>a</code>是污点，则<code>a.b</code>和<code>a.c</code>都是污点。</p>
+<p>在登录Semgrep使用专业版引擎下，Semgrep的污点分析支持基础的<code>数组索引敏感</code>，能够区分<strong>静态常量</strong>作为索引的情况。例如<code>x[44]</code>，<code>x[&quot;foo&quot;]</code>它们之间的污点互不影响。</p>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>本文介绍了Semgrep数据流分析中最常用的部分，还有一些更高级的特性受限于篇幅，在此无法一一说明，大家可以参考<a target="_blank" rel="noopener" href="https://semgrep.dev/docs/writing-rules/data-flow/">官方文档</a>。通过三章内容，我们现在已经可以熟练掌握Semgrep，能拿它服务于各种安全分析任务中，对于Semgrep的一些更高级的特性，我们将在有需要的时候顺带介绍。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>本文作者： </strong>长庚伴月
+  </li>
+  <li class="post-copyright-link">
+      <strong>本文链接：</strong>
+      <a href="https://fubuki8087.github.io/2025/02/06/Semgrep%EF%BC%88%E4%B8%89%EF%BC%89%EF%BC%9A%E6%95%B0%E6%8D%AE%E6%B5%81%E5%88%86%E6%9E%90/" title="Semgrep（三）：数据流分析">https://fubuki8087.github.io/2025/02/06/Semgrep（三）：数据流分析/</a>
+  </li>
+  <li class="post-copyright-license">
+      <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc/4.0/deed.zh-hans" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/Python%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90/" rel="tag"># Python静态分析</a>
+              <a href="/tags/Semgrep/" rel="tag"># Semgrep</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/02/03/Semgrep%EF%BC%88%E4%BA%8C%EF%BC%89%EF%BC%9A%E6%A8%A1%E5%BC%8F%E8%AF%AD%E6%B3%95/" rel="prev" title="Semgrep（二）：模式语法">
+                  <i class="fa fa-angle-left"></i> Semgrep（二）：模式语法
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">长庚伴月</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">12k</span>
+  </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+  <script class="next-config" data-name="mermaid" type="application/json">{"enable":true,"theme":{"light":"default","dark":"dark"},"js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.4.0/mermaid.min.js","integrity":"sha256-G8ouPAnw4zzMbnAenHnVz6h9XpKbNdOkrqTh7AadyHs="}}</script>
+  <script src="/js/third-party/tags/mermaid.js"></script>
+
+
+
+
+
+  
+
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/darkmode-js@1.5.7/lib/darkmode-js.min.js"></script>
+
+<script>
+var options = {
+  bottom: '64px',
+  right: '32px',
+  left: 'unset',
+  time: '0.5s',
+  mixColor: 'transparent',
+  backgroundColor: 'transparent',
+  buttonColorDark: '#100f2c',
+  buttonColorLight: '#fff',
+  saveInCookies: false,
+  label: '🌓',
+  autoMatchOsTheme: false
+}
+const darkmode = new Darkmode(options);
+window.darkmode = darkmode;
+darkmode.showWidget();
+if (window.darkmode && !window.darkmode.isActivated()) {
+  window.darkmode.toggle();
+  var toggleButtons = document.getElementsByClassName("darkmode-toggle");
+  if (toggleButtons && toggleButtons.length > 0) {
+    for (i = 0; i < toggleButtons.length; i++) {
+      toggleButtons[i].classList.add("darkmode-toggle--white");
+    }
+  }
+}
+</script>
+
+</body>
+</html>
